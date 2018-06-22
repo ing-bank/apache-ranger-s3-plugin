@@ -15,16 +15,16 @@
               "level": 10,
               "parent": "",
               "mandatory": true,
-              "lookupSupported": false,
-              "recursiveSupported": false,
+              "lookupSupported": true,
+              "recursiveSupported": true,
               "excludesSupported": true,
               "matcher": "org.apache.ranger.plugin.resourcematcher.RangerPathResourceMatcher",
-              "matcherOptions": { "wildCard":true, "ignoreCase":false },
+              "matcherOptions": { "wildCard":true, "ignoreCase":true },
               "validationRegEx":"",
               "validationMessage": "",
               "uiHint":"",
-              "label": "Resource Path",
-              "description": "S3 file or bucket path"
+              "label": "S3 Bucket",
+              "description": "S3 Bucket"
             }
           ],
   "accessTypes":
