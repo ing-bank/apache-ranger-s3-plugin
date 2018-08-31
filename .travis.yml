@@ -1,2 +1,5 @@
 language: java
 
+before_script:
+- echo "Starting dependent containers for testing"
+
