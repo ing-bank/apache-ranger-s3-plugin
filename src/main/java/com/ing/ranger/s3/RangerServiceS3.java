@@ -81,6 +81,4 @@ public class RangerServiceS3 extends RangerBaseService {
     }
     return ret;
   }
-
-
 }
