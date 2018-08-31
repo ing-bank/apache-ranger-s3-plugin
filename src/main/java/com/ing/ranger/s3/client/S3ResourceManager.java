@@ -27,31 +27,34 @@ import java.util.Map;
 
 public class S3ResourceManager {
 
-    public static Map<String, Object> validateConfig(String serviceName, Map<String, String> configs) throws Exception {
-        Map<String, Object> ret = new HashMap<>();
-
+    private static S3Client getS3Client(Map<String, String> configs) {
         if (configs != null) {
-            final S3Client client = new S3Client(configs);
-            if (client != null) {
-                synchronized (client) {
-                    ret = client.connectionTest();
-                }
+            return new S3Client(configs);
+        } else {
+            return null;
+        }
+    }
+
+    public static Map<String, Object> validateConfig(Map<String, String> configs) throws Exception {
+        Map<String, Object> ret = new HashMap<>();
+        S3Client client = getS3Client(configs);
+
+        if (client != null) {
+            synchronized (client) {
+                ret = client.connectionTest();
             }
         }
         return ret;
     }
 
-    public static List<String> getBuckets(String serviceName, Map<String, String> configs,
-                                          ResourceLookupContext context) {
+    public static List<String> getBuckets(Map<String, String> configs, ResourceLookupContext context) {
         String userInput = context.getUserInput();
         List<String> buckets = null;
+        final S3Client client = getS3Client(configs);
 
-        if (configs != null) {
-            final S3Client client = new S3Client(configs);
-            if (client != null) {
-                synchronized (client) {
-                    buckets = client.getBuckets(userInput);
-                }
+        if (client != null) {
+            synchronized (client) {
+                buckets = client.getBuckets(userInput);
             }
         }
         return buckets;
