@@ -19,14 +19,6 @@
 
 package com.ing.ranger.s3.client;
 
-/*
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-*/
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,111 +34,76 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class S3Client {
-  private String endpoint;
-  private String accesskey;
-  private String secretkey;
-  private String uid;
+    private String endpoint;
+    private String accesskey;
+    private String secretkey;
+    private String uid; // ceph user uid, used to verify connection to S3 backend
 
-  private static final Log LOG = LogFactory.getLog(S3Client.class);
+    private static final Log LOG = LogFactory.getLog(S3Client.class);
 
-  public S3Client(Map<String, String> configs) {
-    this.endpoint = configs.get("endpoint");
-    this.accesskey = configs.get("accesskey");
-    this.secretkey = configs.get("secretkey");
-    this.uid = configs.get("uid"); // ceph user uid
-
-    if (this.endpoint == null || this.endpoint.isEmpty()) {
-      LOG.error("No value found for configuration `endpoint`. Lookup will fail");
+    private static void logError(String errorMessage) throws Exception {
+        LOG.error(errorMessage);
+        throw new Exception(errorMessage);
     }
 
-    if (this.accesskey == null || this.accesskey.isEmpty()) {
-      LOG.error("No value found for configuration `key`. Lookup will fail");
+    public S3Client(Map<String, String> configs) throws Exception {
+        this.endpoint  = configs.get("endpoint");
+        this.accesskey = configs.get("accesskey");
+        this.secretkey = configs.get("secretkey");
+        this.uid       = configs.get("uid");
+
+        if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.contains("http") || !this.endpoint.contains("admin")) {
+            logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port/admin");
+        }
+        if (this.accesskey == null || this.secretkey == null || this.uid == null) {
+            logError("Required value not found. Please provide accesskey, secretkey and user uid");
+        }
     }
 
-    if (this.secretkey == null || this.secretkey.isEmpty()) {
-      LOG.error("No value found for configuration `token`. Lookup will fail");
+    private RgwAdmin getRgwAdmin() {
+        return new RgwAdminBuilder()
+                .accessKey(this.accesskey)
+                .secretKey(this.secretkey)
+                .endpoint(this.endpoint)
+                .build();
     }
 
-    if (this.uid == null || this.uid.isEmpty()) {
-      LOG.error("No value found for configuration `token`. Lookup will fail");  // check if needed
-    }
-  }
+    public List<String> getBuckets(final String userInput) {
+        final String needle;
+        RgwAdmin rgwAdmin = getRgwAdmin();
 
-  /*protected static AmazonS3 createS3(String accesskey, String secretkey, String endpoint) {
-    AWSCredentials credentials = new BasicAWSCredentials(accesskey, secretkey);
+        if (userInput != null) {
+            needle = userInput;
+        } else {
+            needle = new String();
+        }
 
-    AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-      .withCredentials(new AWSStaticCredentialsProvider(credentials))
-      .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, "us-east-1"))
-      .build();
+        // Empty string ensures returning all buckets
+        List<String> bucketNames = rgwAdmin.listBucket("")
+                .stream()
+                .filter(s -> FilenameUtils.wildcardMatch(s, needle + "*"))
+                .collect(Collectors.toList());
 
-    return s3;
-  }*/
-
-  public List<String> getBuckets(final String userInput) {
-    final String needle;
-
-    /*AmazonS3 s3 = createS3(this.accesskey, this.secretkey, this.endpoint);
-
-    List<Bucket> buckets = s3.listBuckets();
-    List<String> bucket_names = buckets.stream()
-      .map(bucket -> bucket.getName())
-      .collect(Collectors.toList());
-
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Buckets returned: %s", bucket_names));
-    }
-    */
-    RgwAdmin rgwAdmin = new RgwAdminBuilder()
-      .accessKey(this.accesskey)
-      .secretKey(this.secretkey)
-      .endpoint(this.endpoint)
-      .build();
-
-    if (userInput != null) {
-      needle = userInput;
-    } else {
-      needle = new String();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("Buckets returned for input=%s buckets=%s", needle, bucketNames));
+        }
+        return bucketNames;
     }
 
-    // Empty string ensures returning all buckets
-    List<String> bucket_names = rgwAdmin.listBucket("")
-      .stream()
-      .filter(s -> FilenameUtils.wildcardMatch(s, needle + "*"))
-      .collect(Collectors.toList());
+    public Map<String, Object> connectionTest() {
+        Map<String, Object> responseData = new HashMap<String, Object>();
+        RgwAdmin rgwAdmin = getRgwAdmin();
+        Optional<User> user = rgwAdmin.getUserInfo(this.uid);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("Buckets returned for input=%s buckets=%s", needle, bucket_names));
+        if (!user.isPresent()) {
+            final String errMessage = "Failed, cannot retrieve UserInfo for: " + user;
+            BaseClient.generateResponseDataMap(false, errMessage, errMessage,
+                    null, null, responseData);
+        } else {
+            final String successMessage = "Connection test successful";
+            BaseClient.generateResponseDataMap(true, successMessage, successMessage,
+                    null, null, responseData);
+        }
+        return responseData;
     }
-
-    return bucket_names;
-  }
-
-  public Map<String, Object> connectionTest() {
-    Map<String, Object> responseData = new HashMap<String, Object>();
-
-    RgwAdmin rgwAdmin = new RgwAdminBuilder()
-      .accessKey(this.accesskey)
-      .secretKey(this.secretkey)
-      .endpoint(this.endpoint)
-      .build();
-
-    Optional<User> user = rgwAdmin.getUserInfo(this.uid);
-
-    if (!user.isPresent()) {
-      final String errMessage = "Cannot connect to S3 endpoint (or radosgw)" + user;
-      BaseClient.generateResponseDataMap(false, errMessage, errMessage,
-        null, null, responseData);
-    } else {
-      final String successMessage = "Connection test successful";
-      BaseClient.generateResponseDataMap(true, successMessage, successMessage,
-        null, null, responseData);
-    }
-
-    return responseData;
-  }
-
-  protected void login() {
-    // NOOP: This is not Hadoop
-  }
 }

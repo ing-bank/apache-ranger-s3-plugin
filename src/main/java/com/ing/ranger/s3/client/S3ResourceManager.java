@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class S3ResourceManager {
 
-    private static S3Client getS3Client(Map<String, String> configs) {
+    private static S3Client getS3Client(Map<String, String> configs) throws Exception {
         if (configs != null) {
             return new S3Client(configs);
         } else {
@@ -35,7 +35,7 @@ public class S3ResourceManager {
         }
     }
 
-    public static Map<String, Object> validateConfig(Map<String, String> configs) throws Exception {
+    public static Map<String, Object> validateConfig(Map<String, String> configs) throws Exception{
         Map<String, Object> ret = new HashMap<>();
         S3Client client = getS3Client(configs);
 
@@ -47,7 +47,7 @@ public class S3ResourceManager {
         return ret;
     }
 
-    public static List<String> getBuckets(Map<String, String> configs, ResourceLookupContext context) {
+    public static List<String> getBuckets(Map<String, String> configs, ResourceLookupContext context) throws Exception {
         String userInput = context.getUserInput();
         List<String> buckets = null;
         final S3Client client = getS3Client(configs);
