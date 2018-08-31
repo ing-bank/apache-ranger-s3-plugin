@@ -3,6 +3,7 @@ package com.ing.ranger.s3.client;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 public class S3ClientConfigTest extends TestsSetup {
 
@@ -29,6 +30,11 @@ public class S3ClientConfigTest extends TestsSetup {
         configs.remove("endpoint");
         configs.put("endpoint", "http://127.0.0.1:8010");
         assertThat(new S3Client(configs));
+    }
+
+    @Test
+    public void newS3Client() throws Exception {
+        assertNotNull(new S3Client(configs));
     }
 
 }
