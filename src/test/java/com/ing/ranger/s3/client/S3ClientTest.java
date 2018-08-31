@@ -20,25 +20,23 @@
 package com.ing.ranger.s3.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import java.util.Map;
 
 public class S3ClientTest extends TestsSetup {
 
   @Test
   public void testGetBuckets() throws Exception {
     S3Client client = new S3Client(configs);
-
-    assertThat(client.getBuckets(null)).isNotNull();
+    assertNotNull(client.getBuckets(null));
+    assertThat(client.getBuckets(null)).contains("demobucket");
   }
 
   @Test
   public void testConnectionTest() throws Exception {
     S3Client client = new S3Client(configs);
-
-    Map<String, Object> response = client.connectionTest();
-    assertThat(response.get("connectivityStatus"));
+    assertThat(client.connectionTest().get("connectivityStatus")).isEqualTo(true);
   }
 
   @Test(expected = Exception.class)
@@ -46,6 +44,6 @@ public class S3ClientTest extends TestsSetup {
     configs.remove("endpoint");
     configs.put("endpoint", "http://ceph:8080/admin");
     S3Client client = new S3Client(configs);
-    assertThat(client.connectionTest());
+    assertThat(client.connectionTest().get("connectivityStatus")).isEqualTo(false);
   }
 }
