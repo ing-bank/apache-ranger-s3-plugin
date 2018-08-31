@@ -2,4 +2,8 @@ language: java
 
 before_script:
 - echo "Starting dependent containers for testing"
+- docker-compose up -d
 
+
+after_script:
+- docker-compose down
