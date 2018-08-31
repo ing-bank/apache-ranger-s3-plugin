@@ -21,38 +21,31 @@ package com.ing.ranger.s3.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
 import java.util.Map;
 
-public class S3ClientTest {
-  private Map<String, String> configs;
-
-  @Before
-  public void setUp() {
-    configs = new HashMap<String, String>();
-
-    configs.put("endpoint", "http://127.0.0.1:8010/admin/");
-    configs.put("uid", "ceph-admin");
-    configs.put("accesskey", "accesskey");
-    configs.put("secretkey", "secretkey");
-
-  }
+public class S3ClientTest extends TestsSetup {
 
   @Test
-  public void testGetBuckets() throws Exception{
+  public void testGetBuckets() throws Exception {
     S3Client client = new S3Client(configs);
 
     assertThat(client.getBuckets(null)).isNotNull();
   }
 
   @Test
-  public void testConnectionTest() throws Exception{
+  public void testConnectionTest() throws Exception {
     S3Client client = new S3Client(configs);
 
     Map<String, Object> response = client.connectionTest();
     assertThat(response.get("connectivityStatus"));
+  }
+
+  @Test(expected = Exception.class)
+  public void connectionFailure() throws Exception {
+    configs.remove("endpoint");
+    configs.put("endpoint", "http://ceph:8080/admin");
+    S3Client client = new S3Client(configs);
+    assertThat(client.connectionTest());
   }
 }
