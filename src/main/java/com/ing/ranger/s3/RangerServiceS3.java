@@ -54,7 +54,7 @@ public class RangerServiceS3 extends RangerBaseService {
 
     if (configs != null) {
       try {
-        ret = S3ResourceManager.validateConfig(serviceName, configs);
+        ret = S3ResourceManager.validateConfig(configs);
       } catch (Exception e) {
         LOG.error("RangerServiceS3.validateConfig(): Error: ", e);
         throw e;
@@ -72,7 +72,7 @@ public class RangerServiceS3 extends RangerBaseService {
   public List<String> lookupResource(ResourceLookupContext context) throws Exception {
     List<String> ret = new ArrayList<String>();
     if (context != null) {
-      ret = S3ResourceManager.getBuckets(getServiceName(), getConfigs(), context);
+      ret = S3ResourceManager.getBuckets(getConfigs(), context);
     }
 
     if (LOG.isDebugEnabled()) {
