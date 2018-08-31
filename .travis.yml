@@ -3,7 +3,8 @@ language: java
 before_script:
 - echo "Starting dependent containers for testing"
 - docker-compose up -d
-
+- echo "Wait for containers to be up and running"
+- bash waitForContainerSetup.sh
 
 after_script:
 - docker-compose down
