@@ -53,7 +53,7 @@ public class S3Client {
     this.endpoint = configs.get("endpoint");
     this.accesskey = configs.get("accesskey");
     this.secretkey = configs.get("secretkey");
-    this.uid = configs.get("uid");
+    this.uid = configs.get("uid"); // ceph user uid
 
     if (this.endpoint == null || this.endpoint.isEmpty()) {
       LOG.error("No value found for configuration `endpoint`. Lookup will fail");
@@ -68,7 +68,7 @@ public class S3Client {
     }
 
     if (this.uid == null || this.uid.isEmpty()) {
-      LOG.error("No value found for configuration `token`. Lookup will fail");
+      LOG.error("No value found for configuration `token`. Lookup will fail");  // check if needed
     }
   }
 
@@ -134,7 +134,7 @@ public class S3Client {
     Optional<User> user = rgwAdmin.getUserInfo(this.uid);
 
     if (!user.isPresent()) {
-      final String errMessage = "Cannot connect to S3 endpoint (or radosgw)";
+      final String errMessage = "Cannot connect to S3 endpoint (or radosgw)" + user;
       BaseClient.generateResponseDataMap(false, errMessage, errMessage,
         null, null, responseData);
     } else {

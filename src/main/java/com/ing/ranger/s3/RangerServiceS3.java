@@ -55,9 +55,9 @@ public class RangerServiceS3 extends RangerBaseService {
     if (configs != null) {
       try {
         ret = S3ResourceManager.validateConfig(serviceName, configs);
-      } catch (Exception ex) {
-        LOG.error("RangerServiceS3.validateConfig(): Error: ", ex);
-        throw ex;
+      } catch (Exception e) {
+        LOG.error("RangerServiceS3.validateConfig(): Error: ", e);
+        throw e;
       }
     }
 
