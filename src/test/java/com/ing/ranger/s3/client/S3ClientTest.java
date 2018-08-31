@@ -29,13 +29,12 @@ import java.util.Map;
 
 public class S3ClientTest {
   private Map<String, String> configs;
-  private String serviceName;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     configs = new HashMap<String, String>();
 
-    configs.put("endpoint", "http://127.0.0.1:10080/admin/");
+    configs.put("endpoint", "http://127.0.0.1:8010/admin/");
     configs.put("uid", "ceph-admin");
     configs.put("accesskey", "accesskey");
     configs.put("secretkey", "secretkey");
@@ -43,14 +42,14 @@ public class S3ClientTest {
   }
 
   @Test
-  public void testGetBuckets() {
+  public void testGetBuckets() throws Exception{
     S3Client client = new S3Client(configs);
 
     assertThat(client.getBuckets(null)).isNotNull();
   }
 
   @Test
-  public void testConnectionTest() {
+  public void testConnectionTest() throws Exception{
     S3Client client = new S3Client(configs);
 
     Map<String, Object> response = client.connectionTest();
