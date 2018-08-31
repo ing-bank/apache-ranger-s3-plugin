@@ -22,6 +22,8 @@ package com.ing.ranger.s3;
 import com.ing.ranger.s3.client.S3ResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ranger.plugin.model.RangerService;
+import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.service.RangerBaseService;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
 
@@ -34,15 +36,35 @@ public class RangerServiceS3 extends RangerBaseService {
 
   private static final Log LOG = LogFactory.getLog(RangerServiceS3.class);
 
+  // check if init is requred
+  @Override
+  public void init(RangerServiceDef serviceDef, RangerService service) {
+      super.init(serviceDef, service);
+  }
+
   @Override
   public Map<String, Object> validateConfig() throws Exception {
     Map<String, Object> ret = new HashMap<String, Object>();
     String serviceName = getServiceName();
 
-    if (configs != null) {
-      ret = S3ResourceManager.validateConfig(serviceName, configs);
+    if(LOG.isDebugEnabled()){
+      LOG.debug("RangerServiceS3.validateConfig(): Service: " +
+      serviceName);
     }
 
+    if (configs != null) {
+      try {
+        ret = S3ResourceManager.validateConfig(serviceName, configs);
+      } catch (Exception ex) {
+        LOG.error("RangerServiceS3.validateConfig(): Error: ", ex);
+        throw ex;
+      }
+    }
+
+    if(LOG.isDebugEnabled()){
+      LOG.debug("RangerServiceS3.validateConfig(): Response: " +
+              ret);
+    }
     return ret;
   }
 
@@ -54,9 +76,9 @@ public class RangerServiceS3 extends RangerBaseService {
     }
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("RangerServiceS3.lookupResource Response: (" + ret + ")");
+      LOG.debug("RangerServiceS3.lookupResource() Response: " +
+              ret);
     }
-
     return ret;
   }
 
