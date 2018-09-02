@@ -36,7 +36,6 @@ public class RangerServiceS3 extends RangerBaseService {
 
   private static final Log LOG = LogFactory.getLog(RangerServiceS3.class);
 
-  // check if init is requred
   @Override
   public void init(RangerServiceDef serviceDef, RangerService service) {
       super.init(serviceDef, service);
