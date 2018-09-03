@@ -17,8 +17,10 @@ It will start Ceph demo image on port 8010.
 mvn package
 ``` 
 If you do not have a local Ceph installation to test against use `mvn package -DskipTests`.
+
 3. Copy the jar to `${RANGER_HOME}/ews/webapp/WEB-INF/classes/ranger-plugins/s3`. Please note that the location
 is important (`s3`). 
+
 4. Load the service definition into Apache Ranger. 
 ```
 curl -u <admin>:<admin> -d "@s3-ranger.json" -X POST -H "Accept: application/json" -H "Content-Type: application/json" 
