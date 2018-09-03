@@ -35,7 +35,7 @@ public class S3ResourceManager {
         }
     }
 
-    public static Map<String, Object> validateConfig(Map<String, String> configs) throws Exception{
+    public static Map<String, Object> validateConfig(Map<String, String> configs) throws Exception {
         Map<String, Object> ret = new HashMap<>();
         S3Client client = getS3Client(configs);
 
