@@ -52,7 +52,7 @@ public class S3Client {
         this.secretkey = configs.get("secretkey");
         this.uid       = configs.get("uid");
 
-        if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.contains("http") || !this.endpoint.contains("admin")) {
+        if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http") || !this.endpoint.endsWith("admin")) {
             logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port/admin");
         }
         if (this.accesskey == null || this.secretkey == null || this.uid == null) {
