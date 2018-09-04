@@ -22,6 +22,8 @@ package com.ing.ranger.s3;
 import com.ing.ranger.s3.client.S3ResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ranger.plugin.model.RangerService;
+import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.service.RangerBaseService;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
 
@@ -32,33 +34,46 @@ import java.util.Map;
 
 public class RangerServiceS3 extends RangerBaseService {
 
-  private static final Log LOG = LogFactory.getLog(RangerServiceS3.class);
+    private static final Log LOG = LogFactory.getLog(RangerServiceS3.class);
 
-  @Override
-  public Map<String, Object> validateConfig() throws Exception {
-    Map<String, Object> ret = new HashMap<String, Object>();
-    String serviceName = getServiceName();
-
-    if (configs != null) {
-      ret = S3ResourceManager.validateConfig(serviceName, configs);
+    // check if required
+    @Override
+    public void init(RangerServiceDef serviceDef, RangerService service) {
+        super.init(serviceDef, service);
     }
 
-    return ret;
-  }
+    @Override
+    public Map<String, Object> validateConfig() throws Exception {
+        Map<String, Object> ret = new HashMap<String, Object>();
+        String serviceName = getServiceName();
 
-  @Override
-  public List<String> lookupResource(ResourceLookupContext context) throws Exception {
-    List<String> ret = new ArrayList<String>();
-    if (context != null) {
-      ret = S3ResourceManager.getBuckets(getServiceName(), getConfigs(), context);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("RangerServiceS3.validateConfig(): Service: " +
+                    serviceName);
+        }
+
+        if (configs != null) {
+            ret = S3ResourceManager.validateConfig(configs);
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("RangerServiceS3.validateConfig(): Response: " +
+                    ret);
+        }
+        return ret;
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("RangerServiceS3.lookupResource Response: (" + ret + ")");
+    @Override
+    public List<String> lookupResource(ResourceLookupContext context) throws Exception {
+        List<String> ret = new ArrayList<String>();
+        if (context != null) {
+            ret = S3ResourceManager.getBuckets(getConfigs(), context);
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("RangerServiceS3.lookupResource() Response: " +
+                    ret);
+        }
+        return ret;
     }
-
-    return ret;
-  }
-
-
 }

@@ -20,40 +20,30 @@
 package com.ing.ranger.s3.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+public class S3ClientTest extends TestsSetup {
 
-public class S3ClientTest {
-  private Map<String, String> configs;
-  private String serviceName;
-
-  @Before
-  public void setUp() throws Exception {
-    configs = new HashMap<String, String>();
-
-    configs.put("endpoint", "http://127.0.0.1:10080/admin/");
-    configs.put("uid", "ceph-admin");
-    configs.put("accesskey", "accesskey");
-    configs.put("secretkey", "secretkey");
-
+  @Test
+  public void testGetBuckets() throws Exception {
+    S3Client client = new S3Client(configs);
+    assertNotNull(client.getBuckets(null));
+    assertThat(client.getBuckets(null)).contains("demobucket");
   }
 
   @Test
-  public void testGetBuckets() {
+  public void testConnectionTest() throws Exception {
     S3Client client = new S3Client(configs);
-
-    assertThat(client.getBuckets(null)).isNotNull();
+    assertThat(client.connectionTest().get("connectivityStatus")).isEqualTo(true);
   }
 
-  @Test
-  public void testConnectionTest() {
+  @Test(expected = Exception.class)
+  public void connectionFailure() throws Exception {
+    configs.remove("endpoint");
+    configs.put("endpoint", "http://ceph:8080/admin");
     S3Client client = new S3Client(configs);
-
-    Map<String, Object> response = client.connectionTest();
-    assertThat(response.get("connectivityStatus"));
+    assertThat(client.connectionTest().get("connectivityStatus")).isEqualTo(false);
   }
 }
