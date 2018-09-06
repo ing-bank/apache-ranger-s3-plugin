@@ -30,7 +30,7 @@
         <javac.target.version>1.8</javac.target.version>
         <junit.version>4.12</junit.version>
         <assertj.version>1.7.0</assertj.version>
-        <ranger.version>1.0.0</ranger.version>
+        <ranger.version>1.1.0</ranger.version>
         <aws.version>1.11.285</aws.version>
         <radosgw.version>1.0.2</radosgw.version>
     </properties>
@@ -176,6 +176,14 @@
                             <pattern>com.google</pattern>
                             <shadedPattern>ing.com.repackaged.com.google</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>okhttp3</pattern>
+                            <shadedPattern>ing.com.repackaged.okhttp3</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio</pattern>
+                            <shadedPattern>ing.com.repackaged.okio</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -189,6 +197,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>
