@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ing-bank/apache-ranger-s3-plugin.svg?branch=master)](https://travis-ci.org/ing-bank/apache-ranger-s3-plugin)
+
 # Apache Ranger S3 Plugin
 
 Ranger S3 Plugin enables creation of policies in Apache Ranger for S3 buckets hosted on Ceph/RadosGW (S3 coming later). 
