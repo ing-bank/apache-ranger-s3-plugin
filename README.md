@@ -2,7 +2,7 @@
 
 Ranger S3 Plugin enables creation of policies in Apache Ranger for S3 buckets hosted on Ceph/RadosGW (S3 coming later). 
 It merely allows for the creation of policies and does not set ACLs by itself. It can be used together with its sister 
-`scala` project [gargoyle-s3proxy](https://github.com/arempter/gargoyle-s3proxy).
+`scala` project [Airlock](https://github.com/ing-bank/airlock).
 
 # Installation
 
