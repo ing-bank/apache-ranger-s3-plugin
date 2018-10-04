@@ -1,8 +1,11 @@
+[![Build Status](https://travis-ci.org/ing-bank/apache-ranger-s3-plugin.svg?branch=master)](https://travis-ci.org/ing-bank/apache-ranger-s3-plugin)
+[![codecov.io](http://codecov.io/github/ing-bank/apache-ranger-s3-plugin/coverage.svg?branch=master)](https://codecov.io/gh/ing-bank/apache-ranger-s3-plugin?branch=master)
+
 # Apache Ranger S3 Plugin
 
 Ranger S3 Plugin enables creation of policies in Apache Ranger for S3 buckets hosted on Ceph/RadosGW (S3 coming later). 
 It merely allows for the creation of policies and does not set ACLs by itself. It can be used together with its sister 
-`scala` project [gargoyle-s3proxy](https://github.com/arempter/gargoyle-s3proxy).
+`scala` project [Airlock](https://github.com/ing-bank/airlock).
 
 # Installation
 
