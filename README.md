@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/ing-bank/apache-ranger-s3-plugin.svg?branch=master)](https://travis-ci.org/ing-bank/apache-ranger-s3-plugin)
+[![codecov.io](http://codecov.io/github/ing-bank/apache-ranger-s3-plugin/coverage.svg?branch=master)](https://codecov.io/gh/ing-bank/apache-ranger-s3-plugin?branch=master)
 
 # Apache Ranger S3 Plugin
 
