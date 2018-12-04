@@ -19,6 +19,7 @@
 
 package com.ing.ranger.s3.client;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -64,9 +65,15 @@ public class S3Client {
 
     private AmazonS3 getAWSClient() {
         AWSCredentials credentials = new BasicAWSCredentials(this.accesskey, this.secretkey);
+        // singer type only required util akka http allows Raw User-Agent header
+        // airlock changes User-Agent and causes signature mismatch
+        ClientConfiguration conf = new ClientConfiguration();
+        conf.setSignerOverride("S3SignerType");
+
         AmazonS3 client = AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withClientConfiguration(conf)
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, "us-east-1"))
                 .build();
         return client;
