@@ -31,8 +31,8 @@ public class S3ClientTest extends TestsSetup {
     S3Client client = new S3Client(configs);
     assertNotNull(client.getBuckets("demo"));
     assertThat(client.getBuckets("demo")).contains("/demobucket");
-    assertThat(client.getBuckets("demo")).contains("/demobucket/subdir1/");
-    assertThat(client.getBuckets("demo")).contains("/demobucket/subdir2/");
+    assertThat(client.getBuckets("demo")).contains("/demobucket/subdir1/issue");
+    assertThat(client.getBuckets("demo")).contains("/demobucket/subdir2/issue");
   }
 
   @Test
