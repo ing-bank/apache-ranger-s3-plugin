@@ -50,3 +50,10 @@ Configuration file is in `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ran
     <description />
 </property>
 ```
+
+# Plugin usage with [Airlock](https://github.com/ing-bank/airlock)
+
+If you run plugin via Airlock, make sure that:
+
+- user used in S3 service setup is NPA user in [Airlock STS](https://github.com/ing-bank/airlock-sts)
+- user is added to all - path Ranger policy 
