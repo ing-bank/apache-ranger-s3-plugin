@@ -11,8 +11,7 @@ public class TestsSetup {
     @Before
     public void setUp() {
         configs = new HashMap<String, String>();
-        configs.put("endpoint", "http://127.0.0.1:8010/admin");
-        configs.put("uid", "ceph-admin");
+        configs.put("endpoint", "http://127.0.0.1:8010");
         configs.put("accesskey", "accesskey");
         configs.put("secretkey", "secretkey");
     }

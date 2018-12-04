@@ -36,3 +36,17 @@ http://{RANGER_HOST}:{RANGER_PORT}/service/public/v2/api/servicedef
 * Proper lookups
 * No ceph-user name required
 * AWS S3 support
+
+# Ranger admin site configuration
+
+Ranger S3 plugin uses aws sdk to connect to backend to list buckets and folders. In case of 
+timeouts, check ranger setting and adjust accordingly. Default 1000 may be to low in some cases.
+Configuration file is in `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ranger-admin-default-site.xml.`
+
+```
+<property>
+    <name>ranger.resource.lookup.timeout.value.in.ms</name>
+    <value>10000</value>
+    <description />
+</property>
+```

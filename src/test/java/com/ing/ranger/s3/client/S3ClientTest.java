@@ -29,8 +29,10 @@ public class S3ClientTest extends TestsSetup {
   @Test
   public void testGetBuckets() throws Exception {
     S3Client client = new S3Client(configs);
-    assertNotNull(client.getBuckets(null));
-    assertThat(client.getBuckets(null)).contains("demobucket");
+    assertNotNull(client.getBuckets("demo"));
+    assertThat(client.getBuckets("demo")).contains("/demobucket");
+    assertThat(client.getBuckets("demo")).contains("/demobucket/subdir1/");
+    assertThat(client.getBuckets("demo")).contains("/demobucket/subdir2/");
   }
 
   @Test
@@ -42,7 +44,7 @@ public class S3ClientTest extends TestsSetup {
   @Test(expected = Exception.class)
   public void connectionFailure() throws Exception {
     configs.remove("endpoint");
-    configs.put("endpoint", "http://ceph:8080/admin");
+    configs.put("endpoint", "http://ceph:8080");
     S3Client client = new S3Client(configs);
     assertThat(client.connectionTest().get("connectivityStatus")).isEqualTo(false);
   }

@@ -5,6 +5,7 @@ before_script:
 - docker-compose up -d
 - echo "Wait for containers to be up and running"
 - bash waitForContainerSetup.sh
+- bash setupS3Env.sh
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)

@@ -22,8 +22,6 @@ package com.ing.ranger.s3;
 import com.ing.ranger.s3.client.S3ResourceManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ranger.plugin.model.RangerService;
-import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.service.RangerBaseService;
 import org.apache.ranger.plugin.service.ResourceLookupContext;
 
@@ -35,12 +33,6 @@ import java.util.Map;
 public class RangerServiceS3 extends RangerBaseService {
 
     private static final Log LOG = LogFactory.getLog(RangerServiceS3.class);
-
-    // check if required
-    @Override
-    public void init(RangerServiceDef serviceDef, RangerService service) {
-        super.init(serviceDef, service);
-    }
 
     @Override
     public Map<String, Object> validateConfig() throws Exception {
