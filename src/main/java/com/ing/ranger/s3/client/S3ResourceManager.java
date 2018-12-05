@@ -27,8 +27,7 @@ import java.util.Map;
 
 public class S3ResourceManager {
 
-    //todo: Private
-    public static S3Client getS3Client(Map<String, String> configs) throws Exception {
+    private static S3Client getS3Client(Map<String, String> configs) throws Exception {
         if (configs != null) {
             return new S3Client(configs);
         } else {
