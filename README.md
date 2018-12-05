@@ -51,6 +51,17 @@ Configuration file is in `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ran
 </property>
 ```
 
+Additionally plugin can be configured with different aws region. In order to change region, add
+following section to `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ranger-admin-default-site.xml.`
+
+```
+ <property>
+     <name>airlock.s3.aws.region</name>
+     <value>region_name</value>
+ </property>
+```
+
+
 # Plugin usage with [Airlock](https://github.com/ing-bank/airlock)
 
 If you run plugin via Airlock, make sure that:
