@@ -116,8 +116,17 @@ public class S3Client {
 
         List<String> bucketsPaths = buckets
                 .stream()
-                .filter(b -> b.startsWith(needle))
-                .flatMap(b -> getBucketsPseudoDirs(b).stream())
+                .filter(b -> b.startsWith(needle.replace("/","")))
+                .flatMap(b -> {
+                    if (needle.endsWith("/")) {
+                      return getBucketsPseudoDirs(b).stream();
+                    } else {
+                      return buckets.stream().filter(sb->sb.startsWith(needle)).map(sb-> String.format("/%s",sb));
+                    }
+                })
+                .distinct()
+                .sorted()
+                .limit(50)
                 .collect(Collectors.toList());
 
         return bucketsPaths;
@@ -126,11 +135,11 @@ public class S3Client {
     public List<String> getBucketsPseudoDirs(final String bucket) {
         List<String> pseudodirs = new ArrayList<String>();
 
-        pseudodirs.add(String.format("/%s", bucket));
-
         for (S3ObjectSummary o : getAWSClient().listObjects(bucket).getObjectSummaries()) {
-            String searchPath = String.format("/%s/%s", bucket, o.getKey());
-            pseudodirs.add(searchPath);
+            if (o.getSize() == 0) {
+                String searchPath = String.format("/%s/%s", bucket, o.getKey());
+                pseudodirs.add(searchPath);
+            }
         }
         return pseudodirs;
     }
