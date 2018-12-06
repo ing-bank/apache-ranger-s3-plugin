@@ -73,13 +73,14 @@ public class S3Client {
         ClientConfiguration conf = new ClientConfiguration();
         conf.setSignerOverride("S3SignerType");
 
-        AmazonS3 client = AmazonS3ClientBuilder
+        AmazonS3ClientBuilder client = AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withClientConfiguration(conf)
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, awsregion))
-                .build();
-        return client;
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, awsregion));
+
+        client.setPathStyleAccessEnabled(true);
+        return client.build();
     }
 
     public Map<String, Object> connectionTest() {

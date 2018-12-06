@@ -32,7 +32,6 @@
         <assertj.version>1.7.0</assertj.version>
         <ranger.version>1.1.0</ranger.version>
         <aws.version>1.11.461</aws.version>
-        <radosgw.version>1.0.2</radosgw.version>
     </properties>
 
     <dependencies>
