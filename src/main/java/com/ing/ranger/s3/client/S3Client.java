@@ -27,17 +27,18 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.ObjectListing;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 import org.apache.ranger.plugin.client.BaseClient;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class S3Client {
     private String endpoint;
@@ -56,7 +57,7 @@ public class S3Client {
         this.endpoint = configs.get("endpoint");
         this.accesskey = configs.get("accesskey");
         this.secretkey = configs.get("secretkey");
-        this.awsregion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "default");
+        this.awsregion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "us-east-1");
 
         if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http")) {
             logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port");
@@ -100,28 +101,38 @@ public class S3Client {
         return responseData;
     }
 
-    public List<String> getBuckets(final String userInput) {
-        final String needle;
-        List<String> buckets = new ArrayList<String>();
+    private String removeLeadingSlash(final String userInput) {
+       String witoutLeadingSlash;
+       if (userInput.startsWith("/")) {
+           witoutLeadingSlash = userInput.substring(1);
+       } else {
+           witoutLeadingSlash = userInput;
+       }
+       return witoutLeadingSlash;
+    }
 
-        if (userInput != null) {
-            needle = userInput;
+    public List<String> getBucketPaths(final String userInput) {
+        Supplier<Stream<Bucket>> buckets = () -> getAWSClient().listBuckets().stream();
+        String[] userInputSplitted = removeLeadingSlash(userInput).split("/");
+        String bucketFilter = userInputSplitted[0];
+        String subdirFilter;
+
+        if (userInputSplitted.length >= 2) {
+            subdirFilter = userInput.substring(removeLeadingSlash(userInput).indexOf("/") + 2);
         } else {
-            needle = new String();
-        }
-
-        for (Bucket b : getAWSClient().listBuckets()) {
-            buckets.add(b.getName());
+            subdirFilter = "";
         }
 
         List<String> bucketsPaths = buckets
-                .stream()
-                .filter(b -> b.startsWith(needle.replace("/","")))
+                .get()
+                .filter(b -> b.getName().startsWith(bucketFilter))
                 .flatMap(b -> {
-                    if (needle.endsWith("/")) {
-                      return getBucketsPseudoDirs(b).stream();
+                    if (subdirFilter.length() > 0 || userInput.endsWith("/")) { //todo: end / on subdir brakes search
+                      return getBucketsPseudoDirs(b.getName(), subdirFilter).stream();
                     } else {
-                      return buckets.stream().filter(sb->sb.startsWith(needle)).map(sb-> String.format("/%s",sb));
+                        return buckets.get()
+                                .filter(sb->sb.getName().startsWith(bucketFilter))
+                                .map(sb-> String.format("/%s",sb.getName()));
                     }
                 })
                 .distinct()
@@ -132,15 +143,23 @@ public class S3Client {
         return bucketsPaths;
     }
 
-    public List<String> getBucketsPseudoDirs(final String bucket) {
-        List<String> pseudodirs = new ArrayList<String>();
+    public List<String> getBucketsPseudoDirs(final String bucket, final String subdirFilter) {
+        ObjectListing bucketObjects = getAWSClient().listObjects(bucket);
 
-        for (S3ObjectSummary o : getAWSClient().listObjects(bucket).getObjectSummaries()) {
-            if (o.getSize() == 0) {
-                String searchPath = String.format("/%s/%s", bucket, o.getKey());
-                pseudodirs.add(searchPath);
-            }
-        }
-        return pseudodirs;
+        List<String> pseduDirsFiltered = bucketObjects
+                .getObjectSummaries()
+                .stream()
+                .filter(p -> {
+                    if(subdirFilter.length() > 0) {
+                        return p.getKey().startsWith(subdirFilter);
+                    } else {
+                        return true;
+                    }
+                })
+                .filter(p -> p.getSize() == 0)
+                .map(p ->String.format("/%s/%s",bucket, p.getKey()))
+                .collect(Collectors.toList());
+
+        return pseduDirsFiltered;
     }
 }

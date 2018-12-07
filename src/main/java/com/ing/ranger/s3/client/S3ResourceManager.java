@@ -54,7 +54,7 @@ public class S3ResourceManager {
 
         if (client != null) {
             synchronized (client) {
-                buckets = client.getBuckets(userInput);
+                buckets = client.getBucketPaths(userInput);
             }
         }
         return buckets;
