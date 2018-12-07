@@ -66,5 +66,7 @@ following section to `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ranger-
 
 If you run plugin via Airlock, make sure that:
 
-- user used in S3 service setup is NPA user in [Airlock STS](https://github.com/ing-bank/airlock-sts)
-- user is added to all - path Ranger policy 
+- user used in S3 service setup is NPA user in [Airlock STS](https://github.com/ing-bank/airlock-sts).
+See "NPA S3 users" section of STS readme
+- user is added to "all - path" Ranger policy - in oder words ceph user used for connection, must be 
+allowed to read all bucket paths   

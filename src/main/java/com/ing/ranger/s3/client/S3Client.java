@@ -102,22 +102,22 @@ public class S3Client {
     }
 
     private String removeLeadingSlash(final String userInput) {
-       String witoutLeadingSlash;
-       if (userInput.startsWith("/")) {
-           witoutLeadingSlash = userInput.substring(1);
-       } else {
-           witoutLeadingSlash = userInput;
-       }
-       return witoutLeadingSlash;
+        String withoutLeadingSlash;
+        if (userInput.startsWith("/")) {
+            withoutLeadingSlash = userInput.substring(1);
+        } else {
+            withoutLeadingSlash = userInput;
+        }
+        return withoutLeadingSlash;
     }
 
     public List<String> getBucketPaths(final String userInput) {
         Supplier<Stream<Bucket>> buckets = () -> getAWSClient().listBuckets().stream();
-        String[] userInputSplited = removeLeadingSlash(userInput).split("/");
-        String bucketFilter = userInputSplited[0];
+        String[] userInputSplit = removeLeadingSlash(userInput).split("/");
+        String bucketFilter = userInputSplit[0];
         String subdirFilter;
 
-        if (userInputSplited.length >= 2) {
+        if (userInputSplit.length >= 2) {
             subdirFilter = userInput.substring(removeLeadingSlash(userInput).indexOf("/") + 2);
         } else {
             subdirFilter = "";
@@ -128,11 +128,11 @@ public class S3Client {
                 .filter(b -> b.getName().startsWith(bucketFilter))
                 .flatMap(b -> {
                     if (subdirFilter.length() > 0 || userInput.endsWith("/")) {
-                      return getBucketsPseudoDirs(b.getName(), subdirFilter).stream();
+                        return getBucketsPseudoDirs(b.getName(), subdirFilter).stream();
                     } else {
                         return buckets.get()
-                                .filter(sb->sb.getName().startsWith(bucketFilter))
-                                .map(sb-> String.format("/%s",sb.getName()));
+                                .filter(sb -> sb.getName().startsWith(bucketFilter))
+                                .map(sb -> String.format("/%s", sb.getName()));
                     }
                 })
                 .distinct()
@@ -150,7 +150,7 @@ public class S3Client {
                 .getObjectSummaries()
                 .stream()
                 .filter(p -> {
-                    if(subdirFilter.length() > 0) {
+                    if (subdirFilter.length() > 0) {
                         return p.getKey().startsWith(subdirFilter);
                     } else {
                         return true;
