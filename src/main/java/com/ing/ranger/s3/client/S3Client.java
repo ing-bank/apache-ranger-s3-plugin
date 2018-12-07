@@ -19,25 +19,32 @@
 
 package com.ing.ranger.s3.client;
 
-import org.apache.commons.io.FilenameUtils;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.ObjectListing;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 import org.apache.ranger.plugin.client.BaseClient;
-import org.twonote.rgwadmin4j.RgwAdmin;
-import org.twonote.rgwadmin4j.RgwAdminBuilder;
-import org.twonote.rgwadmin4j.model.User;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class S3Client {
     private String endpoint;
-    private String accesskey;
-    private String secretkey;
-    private String uid; // ceph user uid, used to verify connection to S3 backend
+    private String accessKey;
+    private String secretKey;
+    private String awsRegion;
 
     private static final Log LOG = LogFactory.getLog(S3Client.class);
 
@@ -47,56 +54,43 @@ public class S3Client {
     }
 
     public S3Client(Map<String, String> configs) throws Exception {
-        this.endpoint  = configs.get("endpoint");
-        this.accesskey = configs.get("accesskey");
-        this.secretkey = configs.get("secretkey");
-        this.uid       = configs.get("uid");
+        this.endpoint = configs.get("endpoint");
+        this.accessKey = configs.get("accesskey");
+        this.secretKey = configs.get("secretkey");
+        this.awsRegion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "us-east-1");
 
-        if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http") || !this.endpoint.endsWith("admin")) {
-            logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port/admin");
+        if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http")) {
+            logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port");
         }
-        if (this.accesskey == null || this.secretkey == null || this.uid == null) {
-            logError("Required value not found. Please provide accesskey, secretkey and user uid");
+        if (this.accessKey == null || this.secretKey == null) {
+            logError("Required value not found. Please provide accessKey, secretKey and user uid");
         }
     }
 
-    private RgwAdmin getRgwAdmin() {
-        return new RgwAdminBuilder()
-                .accessKey(this.accesskey)
-                .secretKey(this.secretkey)
-                .endpoint(this.endpoint)
-                .build();
-    }
+    private AmazonS3 getAWSClient() {
+        AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
+        // singer type only required util akka http allows Raw User-Agent header
+        // airlock changes User-Agent and causes signature mismatch
+        ClientConfiguration conf = new ClientConfiguration();
+        conf.setSignerOverride("S3SignerType");
 
-    public List<String> getBuckets(final String userInput) {
-        final String needle;
-        RgwAdmin rgwAdmin = getRgwAdmin();
+        AmazonS3ClientBuilder client = AmazonS3ClientBuilder
+                .standard()
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withClientConfiguration(conf)
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, awsRegion));
 
-        if (userInput != null) {
-            needle = userInput;
-        } else {
-            needle = new String();
-        }
-
-        // Empty string ensures returning all buckets
-        List<String> bucketNames = rgwAdmin.listBucket("")
-                .stream()
-                .filter(s -> FilenameUtils.wildcardMatch(s, needle + "*"))
-                .collect(Collectors.toList());
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Buckets returned for input=%s buckets=%s", needle, bucketNames));
-        }
-        return bucketNames;
+        client.setPathStyleAccessEnabled(true);
+        return client.build();
     }
 
     public Map<String, Object> connectionTest() {
         Map<String, Object> responseData = new HashMap<String, Object>();
-        RgwAdmin rgwAdmin = getRgwAdmin();
-        Optional<User> user = rgwAdmin.getUserInfo(this.uid);
 
-        if (!user.isPresent()) {
-            final String errMessage = "Failed, cannot retrieve UserInfo for: " + user;
+        List<Bucket> buckets = getAWSClient().listBuckets();
+
+        if (buckets.get(0).getName().isEmpty()) {
+            final String errMessage = "Failed, cannot retrieve Buckets list from S3";
             BaseClient.generateResponseDataMap(false, errMessage, errMessage,
                     null, null, responseData);
         } else {
@@ -105,5 +99,78 @@ public class S3Client {
                     null, null, responseData);
         }
         return responseData;
+    }
+
+    private String removeLeadingSlash(final String userInput) {
+        String withoutLeadingSlash;
+        if (userInput.startsWith("/")) {
+            withoutLeadingSlash = userInput.substring(1);
+        } else {
+            withoutLeadingSlash = userInput;
+        }
+        return withoutLeadingSlash;
+    }
+
+    public List<String> getBucketPaths(final String userInput) {
+        Supplier<Stream<Bucket>> buckets = () -> getAWSClient().listBuckets().stream();
+        String[] userInputSplit = removeLeadingSlash(userInput).split("/");
+        String bucketFilter = userInputSplit[0];
+        String subdirFilter;
+
+        if (userInputSplit.length >= 2) {
+            subdirFilter = userInput.substring(removeLeadingSlash(userInput).indexOf("/") + 2);
+        } else {
+            subdirFilter = "";
+        }
+
+        List<String> bucketsPaths = buckets
+                .get()
+                .filter(b -> b.getName().startsWith(bucketFilter))
+                .flatMap(b -> {
+                    if (subdirFilter.length() > 0 || userInput.endsWith("/")) {
+                        return getBucketsPseudoDirs(b.getName(), subdirFilter).stream();
+                    } else {
+                        return buckets.get()
+                                .filter(sb -> sb.getName().startsWith(bucketFilter))
+                                .map(sb -> String.format("/%s", sb.getName()));
+                    }
+                })
+                .distinct()
+                .sorted()
+                .limit(50)
+                .collect(Collectors.toList());
+
+        return bucketsPaths;
+    }
+
+    public List<String> getBucketsPseudoDirs(final String bucket, final String subdirFilter) {
+        ObjectListing bucketObjects = getAWSClient().listObjects(bucket);
+
+        List<String> pseduDirsFiltered = bucketObjects
+                .getObjectSummaries()
+                .stream()
+                .filter(p -> {
+                    if (subdirFilter.length() > 0) {
+                        return p.getKey().startsWith(subdirFilter);
+                    } else {
+                        return true;
+                    }
+                })
+                .map(p -> {
+                    if (p.getSize() == 0) {
+                        return String.format("/%s/%s", bucket, p.getKey());
+                    } else {
+                        Integer endIndex = p.getKey().contains("/") ? p.getKey().lastIndexOf("/") : 0;
+                        if (endIndex > 0) {
+                            return String.format("/%s/%s/", bucket, p.getKey().substring(0, endIndex));
+                        } else {
+                            return String.format("/%s/", bucket);
+                        }
+
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return pseduDirsFiltered;
     }
 }

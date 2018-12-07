@@ -36,3 +36,37 @@ http://{RANGER_HOST}:{RANGER_PORT}/service/public/v2/api/servicedef
 * Proper lookups
 * No ceph-user name required
 * AWS S3 support
+
+# Ranger admin site configuration
+
+Ranger S3 plugin uses aws sdk to connect to backend to list buckets and folders. In case of 
+timeouts, check ranger setting and adjust accordingly. Default 1000 may be to low in some cases.
+Configuration file is in `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ranger-admin-default-site.xml.`
+
+```
+<property>
+    <name>ranger.resource.lookup.timeout.value.in.ms</name>
+    <value>10000</value>
+    <description />
+</property>
+```
+
+Additionally plugin can be configured with different aws region. In order to change region, add
+following section to `ranger-1.1.0-admin/ews/webapp/WEB-INF/classes/conf/ranger-admin-default-site.xml.`
+
+```
+ <property>
+     <name>airlock.s3.aws.region</name>
+     <value>region_name</value>
+ </property>
+```
+
+
+# Plugin usage with [Airlock](https://github.com/ing-bank/airlock)
+
+If you run plugin via Airlock, make sure that:
+
+- user used in S3 service setup is NPA user in [Airlock STS](https://github.com/ing-bank/airlock-sts).
+See "NPA S3 users" section of STS readme
+- user is added to "all - path" Ranger policy - in oder words ceph user used for connection, must be 
+allowed to read all bucket paths   

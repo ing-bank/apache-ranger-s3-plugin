@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class S3ResourceManager {
 
-    private static S3Client getS3Client(Map<String, String> configs) throws Exception {
+    public static S3Client getS3Client(Map<String, String> configs) throws Exception {
         if (configs != null) {
             return new S3Client(configs);
         } else {
@@ -54,7 +54,7 @@ public class S3ResourceManager {
 
         if (client != null) {
             synchronized (client) {
-                buckets = client.getBuckets(userInput);
+                buckets = client.getBucketPaths(userInput);
             }
         }
         return buckets;
