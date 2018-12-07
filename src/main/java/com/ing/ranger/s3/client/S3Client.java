@@ -113,11 +113,11 @@ public class S3Client {
 
     public List<String> getBucketPaths(final String userInput) {
         Supplier<Stream<Bucket>> buckets = () -> getAWSClient().listBuckets().stream();
-        String[] userInputSplitted = removeLeadingSlash(userInput).split("/");
-        String bucketFilter = userInputSplitted[0];
+        String[] userInputSplited = removeLeadingSlash(userInput).split("/");
+        String bucketFilter = userInputSplited[0];
         String subdirFilter;
 
-        if (userInputSplitted.length >= 2) {
+        if (userInputSplited.length >= 2) {
             subdirFilter = userInput.substring(removeLeadingSlash(userInput).indexOf("/") + 2);
         } else {
             subdirFilter = "";
@@ -160,7 +160,13 @@ public class S3Client {
                     if (p.getSize() == 0) {
                         return String.format("/%s/%s", bucket, p.getKey());
                     } else {
-                        return String.format("/%s/%s/",bucket, p.getKey().substring(0, p.getKey().lastIndexOf("/")));
+                        Integer endIndex = p.getKey().contains("/") ? p.getKey().lastIndexOf("/") : 0;
+                        if (endIndex > 0) {
+                            return String.format("/%s/%s/", bucket, p.getKey().substring(0, endIndex));
+                        } else {
+                            return String.format("/%s/", bucket);
+                        }
+
                     }
                 })
                 .collect(Collectors.toList());
