@@ -42,9 +42,9 @@ import java.util.stream.Stream;
 
 public class S3Client {
     private String endpoint;
-    private String accesskey;
-    private String secretkey;
-    private String awsregion;
+    private String accessKey;
+    private String secretKey;
+    private String awsRegion;
 
     private static final Log LOG = LogFactory.getLog(S3Client.class);
 
@@ -55,20 +55,20 @@ public class S3Client {
 
     public S3Client(Map<String, String> configs) throws Exception {
         this.endpoint = configs.get("endpoint");
-        this.accesskey = configs.get("accesskey");
-        this.secretkey = configs.get("secretkey");
-        this.awsregion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "us-east-1");
+        this.accessKey = configs.get("accesskey");
+        this.secretKey = configs.get("secretkey");
+        this.awsRegion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "us-east-1");
 
         if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http")) {
             logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port");
         }
-        if (this.accesskey == null || this.secretkey == null) {
-            logError("Required value not found. Please provide accesskey, secretkey and user uid");
+        if (this.accessKey == null || this.secretKey == null) {
+            logError("Required value not found. Please provide accessKey, secretKey and user uid");
         }
     }
 
     private AmazonS3 getAWSClient() {
-        AWSCredentials credentials = new BasicAWSCredentials(this.accesskey, this.secretkey);
+        AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
         // singer type only required util akka http allows Raw User-Agent header
         // airlock changes User-Agent and causes signature mismatch
         ClientConfiguration conf = new ClientConfiguration();
@@ -78,7 +78,7 @@ public class S3Client {
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withClientConfiguration(conf)
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, awsregion));
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, awsRegion));
 
         client.setPathStyleAccessEnabled(true);
         return client.build();
@@ -127,7 +127,7 @@ public class S3Client {
                 .get()
                 .filter(b -> b.getName().startsWith(bucketFilter))
                 .flatMap(b -> {
-                    if (subdirFilter.length() > 0 || userInput.endsWith("/")) { //todo: end / on subdir brakes search
+                    if (subdirFilter.length() > 0 || userInput.endsWith("/")) {
                       return getBucketsPseudoDirs(b.getName(), subdirFilter).stream();
                     } else {
                         return buckets.get()
@@ -156,8 +156,13 @@ public class S3Client {
                         return true;
                     }
                 })
-                .filter(p -> p.getSize() == 0)
-                .map(p ->String.format("/%s/%s",bucket, p.getKey()))
+                .map(p -> {
+                    if (p.getSize() == 0) {
+                        return String.format("/%s/%s", bucket, p.getKey());
+                    } else {
+                        return String.format("/%s/%s/",bucket, p.getKey().substring(0, p.getKey().lastIndexOf("/")));
+                    }
+                })
                 .collect(Collectors.toList());
 
         return pseduDirsFiltered;
