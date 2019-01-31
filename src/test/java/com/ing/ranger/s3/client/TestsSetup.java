@@ -13,6 +13,6 @@ public class TestsSetup {
         configs = new HashMap<String, String>();
         configs.put("endpoint", "http://127.0.0.1:8010");
         configs.put("accesskey", "accesskey");
-        configs.put("secretkey", "secretkey");
+        configs.put("password", "PBEWithMD5AndDES,tzL1AKl5uc4NKYaoQ4P3WLGIBFPXWPWdu1fRm9004jtQiV,f77aLYLo,1000,6IxJOOpoFsJXyLNjNf/M9Q==");
     }
 }
