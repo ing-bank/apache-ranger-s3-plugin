@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 import org.apache.ranger.plugin.client.BaseClient;
+import org.apache.ranger.plugin.util.PasswordUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,14 +57,14 @@ public class S3Client {
     public S3Client(Map<String, String> configs) throws Exception {
         this.endpoint = configs.get("endpoint");
         this.accessKey = configs.get("accesskey");
-        this.secretKey = configs.get("secretkey");
+        this.secretKey = PasswordUtils.decryptPassword(configs.get("password"));
         this.awsRegion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "us-east-1");
 
         if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http")) {
             logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port");
         }
         if (this.accessKey == null || this.secretKey == null) {
-            logError("Required value not found. Please provide accessKey, secretKey and user uid");
+            logError("Required value not found. Please provide accessKey, secretKey");
         }
     }
 
