@@ -15,7 +15,7 @@ public class S3ClientConfigTest extends TestsSetup {
 
     @Test(expected = Exception.class)
     public void s3ClientConfEmptySecretKey() throws Exception {
-        configs.remove("secretkey");
+        configs.remove("password");
         assertThat(new S3Client(configs));
     }
 
