@@ -20,7 +20,7 @@
 
     <groupId>com.ing.ranger</groupId>
     <artifactId>ranger-s3-plugin</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,37 +28,18 @@
         <java.version.required>1.8</java.version.required>
         <javac.source.version>1.8</javac.source.version>
         <javac.target.version>1.8</javac.target.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <assertj.version>1.7.0</assertj.version>
-        <ranger.version>1.1.0</ranger.version>
-        <aws.version>1.11.461</aws.version>
+        <ranger.version>2.3.0</ranger.version>
+        <aws.version>1.12.347</aws.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <artifactId>guava</artifactId>
-            <groupId>com.google.guava</groupId>
-            <version>11.0.2</version>
-
-        </dependency>
-        <dependency>
             <groupId>org.apache.ranger</groupId>
             <artifactId>ranger-plugins-common</artifactId>
             <version>${ranger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.ranger</groupId>
-                    <artifactId>ranger-plugins-audit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>guava</artifactId>
-                    <groupId>com.google.guava</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>gson</artifactId>
-                    <groupId>com.google.code.gson</groupId>
-                </exclusion>
-            </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -70,11 +51,6 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.9</version>
         </dependency>
         <!-- test dependencies -->
         <dependency>
