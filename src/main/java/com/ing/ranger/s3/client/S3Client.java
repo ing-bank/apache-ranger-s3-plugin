@@ -30,7 +30,6 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ObjectListing;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 import org.apache.ranger.plugin.client.BaseClient;
 import org.apache.ranger.plugin.util.PasswordUtils;
 
@@ -58,7 +57,7 @@ public class S3Client {
         this.endpoint = configs.get("endpoint");
         this.accessKey = configs.get("accesskey");
         this.secretKey = PasswordUtils.decryptPassword(configs.get("password"));
-        this.awsRegion = RangerConfiguration.getInstance().get("airlock.s3.aws.region", "us-east-1");
+        this.awsRegion = configs.getOrDefault("region", "us-east-1");
 
         if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http")) {
             logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port");
