@@ -57,7 +57,7 @@ public class S3Client {
         this.endpoint = configs.get("endpoint");
         this.accessKey = configs.get("accesskey");
         this.secretKey = PasswordUtils.decryptPassword(configs.get("password"));
-        this.awsRegion = configs.getOrDefault("region", "us-east-1");
+        this.awsRegion = configs.getOrDefault("region", "eu-west-1");
 
         if (this.endpoint == null || this.endpoint.isEmpty() || !this.endpoint.startsWith("http")) {
             logError("Incorrect value found for configuration `endpoint`. Please provide url in format http://host:port");
