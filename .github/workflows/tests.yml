@@ -1,4 +1,4 @@
-name: It tests
+name: tests
 on: [workflow_call]
 
 jobs:
